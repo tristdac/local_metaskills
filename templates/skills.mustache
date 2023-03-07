@@ -1,0 +1,171 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_metaskills/form
+
+    Template purpose and description.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * none
+
+    Example context (json):
+    {
+    }
+}}
+
+<div class="output_result" id="output_result">
+    <form action="../save.php" method="POST" id="scoresForm">
+        {{#data}}
+            {{#.}}
+                <div class="col-auto mb-3" id="{{robotname}}">
+                    <div class="card grd_skill" style="width: 18rem;">
+                        <h5 class="card-title">{{name}} <a href="#" data-toggle="popover" title="{{name}}" data-content="Some description of {{name}}. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "><i class="fa fa-info-circle"></i></a>
+                        </h5>
+                        <div class="card-text">
+                            <div class="range-slider">
+                                <input class="input-range" id="in_{{robotname}}" type="range" value="{{#score}}{{score}}{{/score}}{{^score}}0{{/score}}" min="0" step="1" max="100">
+                                <span class="range-value" id="val_{{robotname}}">{{#score}}{{score}}{{/score}}{{^score}}0{{/score}}</span>
+                                <input type="hidden" name="userid" class="" value="">
+                                <input type="hidden" name="skill" class="{{name}}" value="{{name}}">
+                                <input type="hidden" name="score" id="save_{{robotname}}" class="test" value="{{#score}}{{score}}{{/score}}{{^score}}0{{/score}}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {{/.}}
+        {{/data}}
+        <div class="form_buttons">
+            <span id="cancel_btn" class="cancel btn-sml btn btn-danger" title="Cancel"><i class="fa fa-ban"></i></span>
+            <input id="save_btn" class="submit btn-lrg btn btn-success" title="Save" type="submit">
+        </div>
+    </form>
+</div>
+
+
+{{#js}}
+require(['jquery', 'jqueryui', 'core/templates', 'core/modal_factory', 'core/modal_events', 'core/ajax', 'core/config'],function($, jqui, templates, ModalFactory, ModalEvents, ajax, mdlconfig) {
+      
+
+    setTimeout(function(){
+        $( ".col-auto.mb-3" ).each(function() {
+
+
+          let userid = $( this ).closest(".modal").attr('userid');
+          $( this ).find('input[name="userid"]').attr('value',userid);
+
+          let skill_name = $( this ).attr('id');
+          let range = $( this ).find(".input-range#in_"+skill_name);
+          let value = $( this ).find(".range-value#val_"+skill_name);
+          var val = (range.val() - range.attr('min')) / (range.attr('max') - range.attr('min'));
+            range.css('background-image',
+            '-webkit-gradient(linear, left top, right top, '
+            + 'color-stop(' + val + ', #94A14E), '
+            + 'color-stop(' + val + ', #C5C5C5)'
+            + ')'
+            );
+
+          value.html(range.attr("value"));
+          range.on("input", function(){
+            changeMade();
+            value.html(this.value);
+            // Write value to hidden field
+            $("input.test#save_"+skill_name).val(this.value);
+            var val = ($(this).val() - $(this).attr('min')) / ($(this).attr('max') - $(this).attr('min'));
+
+            $(this).css('background-image',
+            '-webkit-gradient(linear, left top, right top, '
+            + 'color-stop(' + val + ', #94A14E), '
+            + 'color-stop(' + val + ', #C5C5C5)'
+            + ')'
+            );
+          });
+        });
+    }, 1000);
+
+    $('[data-toggle="popover"]').popover(); 
+
+    $(document).on('submit', '#scoresForm', function(e)  {
+        let userid = $('.col-auto.mb-3:first-of-type').find('input[name="userid"]').val();
+        var formData = {};
+        $('.col-auto.mb-3').each(function(){
+            userid = $( this ).find('input[name="userid"]').val();
+            skill = $( this ).find('input[name="skill"]').val();
+            score = $( this ).find('input[name="score"]').val();
+            formData[skill] = {
+                userid: userid,
+                skill: skill,
+                score: score
+            };
+        });
+
+        $.ajax({
+            url: mdlconfig.wwwroot + "/local/metaskills/save.php",
+            method: "POST",
+            data: formData,
+            dataType: "json",
+            encode: true,
+        })
+        .done(function(data) {
+            $('.modal-header h4').text('');
+            $('.modal-body').html('<h1 style="text-align:center;">Saving Scores</h1><p style="text-align:center;"><em>This window will close in a few seconds</em><p style="text-align:center;"><span class="fa-stack fa-lg" style="margin-top:20px;"><i class="fa fa-floppy-o fa-stack-1x"></i><i class="fa fa-refresh fa-spin fa-5x fa-fw text-warning" style="position: absolute;left: -42px;top: -30px;"></i></i></span><br/><span class="sr-only">Saving...</span></p>');
+            
+            setTimeout(
+            function() {
+                let element = '#uid-' + userid;
+                $('.modal .close').click();
+                
+                // indicate the row that's been affected
+                
+                //$.jqui(element)(effect({ 'highlight' },500)); 
+                    
+
+            }, 2500); //end fake load
+        });
+
+        $(".modal").removeAttr('userid');
+        e.preventDefault();
+        return false;
+    });
+
+    $(document).on('click','#cancel_btn',function(e) {
+        e.stopImmediatePropagation();
+        if (hasChanges) {
+            if (confirm("You have unsaved changes. Are you sure you want to cancel?")) {
+                $('.modal .close').click();
+              } else {
+
+              }
+        } else {
+            $('.modal .close').click();
+        }
+    });
+
+
+    // Check for unsaved changes
+    window.hasChanges = false;
+    function changeMade() {
+         window.hasChanges = true; // check to see if somethings been changed - if clicking cancel button warn
+    }
+
+});
+{{/js}}

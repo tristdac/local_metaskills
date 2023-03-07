@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/metaskills/db" VERSION="2022042902" COMMENT="XMLDB file for Moodle local_metaskills"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="metaskills" COMMENT="Stores metaskill names and descriptions">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="skill" TYPE="char" LENGTH="128" NOTNULL="true" SEQUENCE="false" COMMENT="The skills name"/>
+        <FIELD NAME="description" TYPE="char" LENGTH="1024" NOTNULL="true" SEQUENCE="false" COMMENT="Description of the skill"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="metaskills_scores" COMMENT="Stores metaskill scores for each student">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The user's Moodle ID"/>
+        <FIELD NAME="skill" TYPE="char" LENGTH="128" NOTNULL="true" SEQUENCE="false" COMMENT="The skill being graded"/>
+        <FIELD NAME="score" TYPE="int" LENGTH="3" NOTNULL="false" SEQUENCE="false" COMMENT="The current score awarded for the specified skill"/>
+        <FIELD NAME="oldscore" TYPE="int" LENGTH="3" NOTNULL="false" SEQUENCE="false" COMMENT="The previous stored score for the specified skill"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>

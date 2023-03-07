@@ -1,0 +1,13 @@
+{
+       "name": "moodle-local_metaskills",
+       "devDependencies": {
+              "grunt": "^1.5.2",
+              "grunt-contrib-less": "^3.0.0",
+              "grunt-contrib-watch": "^1.1.0",
+              "grunt-load-gruntfile": "^0.0.2"
+       },
+       "dependencies": {
+              "node": "^14.19.0",
+              "node-sass": "^7.0.1"
+       }
+}
